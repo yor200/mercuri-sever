@@ -41,6 +41,9 @@ app.get("/explorar", (req,res)=>{
 });
 
 
+  
+
+
 // ver mundo
 app.get("/mundo",(req,res)=>{
 
