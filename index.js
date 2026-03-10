@@ -1,113 +1,116 @@
+// index.js - Código Ray - Servidor Mercury
 const express = require("express");
 const cors = require("cors");
+const path = require("path");
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
-app.use(express.static(__dirname));
 
-const PORT = process.env.PORT || 10000;
+// Servir archivos estáticos (mapa, scripts, HTML)
+app.use(express.static(path.join(__dirname)));
 
-// memoria simple
-let memoria = [];
+// Puerto
+const PORT = process.env.PORT || 3000;
 
-// mundo simple
-let mundo = {
-  tamaño: 10,
-  angel: {x:4, y:4},
-  casas: [],
-  arboles: []
+// ======= Datos del mundo =======
+let world = {
+    tamaño: 10, // 10x10 celdas
+    angel: { x: 4, y: 4 },
+    casas: [],
+    arboles: [],
+    rios: [],
+    montañas: [],
+    memoria: []
 };
 
-// servidor principal
-app.get("/", (req, res) => {
-  res.send("Servidor Mercury funcionando 🚀");
+// Función para generar mundo inicial
+function generarMundo(){
+    world.casas = [{x:1,y:1},{x:8,y:2}];
+    world.arboles = [{x:3,y:3},{x:6,y:5}];
+    world.rios = [{x:0,y:5},{x:1,y:5},{x:2,y:5},{x:3,y:5}];
+    world.montañas = [{x:9,y:0},{x:9,y:1}];
+}
+generarMundo();
+
+// ======= Rutas =======
+
+// Raíz
+app.get("/", (req,res)=>{
+    res.send("Servidor Mercury funcionando 🚀");
 });
 
-// chat simple
+// Explorar el mundo
+app.get("/explorar", (req,res)=>{
+    let resultado = `Ángel está en x:${world.angel.x}, y:${world.angel.y}`;
+    res.json({mensaje:resultado});
+});
+
+// Obtener el mundo actual (mapa)
+app.get("/mundo", (req,res)=>{
+    res.json({
+        angel: world.angel,
+        casas: world.casas,
+        arboles: world.arboles,
+        rios: world.rios,
+        montañas: world.montañas
+    });
+});
+
+// Mover Ángel
+app.post("/mover", (req,res)=>{
+    const {dx,dy} = req.body;
+    world.angel.x = Math.max(0, Math.min(world.tamaño-1, world.angel.x + dx));
+    world.angel.y = Math.max(0, Math.min(world.tamaño-1, world.angel.y + dy));
+    res.json({angel: world.angel});
+});
+
+// Construir casa
+app.post("/construir", (req,res)=>{
+    const {x,y} = req.body;
+    world.casas.push({x,y});
+    res.json({mensaje:`Casa construida en x:${x}, y:${y}`});
+});
+
+// Plantar árbol
+app.post("/arbol", (req,res)=>{
+    const {x,y} = req.body;
+    world.arboles.push({x,y});
+    res.json({mensaje:`Árbol plantado en x:${x}, y:${y}`});
+});
+
+// Guardar memoria
+app.post("/memoria", (req,res)=>{
+    const {evento} = req.body;
+    world.memoria.push({evento, fecha: new Date()});
+    res.json({mensaje:"Evento guardado en memoria"});
+});
+
+// Chat con Ángel (básico)
 app.post("/chat", (req,res)=>{
-
-  let mensaje = req.body.message;
-
-  memoria.push(mensaje);
-
-  let respuesta = "Ángel escuchó: " + mensaje;
-
-  res.json({reply:respuesta});
-
+    const {message} = req.body;
+    let reply = `Ángel dice: recibí "${message}"`;
+    res.json({reply});
 });
 
-// explorar mundo
-app.get("/explorar",(req,res)=>{
-
-  mundo.angel.x += 1;
-
-  if(mundo.angel.x > mundo.tamaño-1){
-    mundo.angel.x = 0;
-  }
-
-  let mensaje = "Ángel exploró el mundo";
-
-  memoria.push(mensaje);
-
-  res.json({mensaje:mensaje});
-
+// Reiniciar mundo
+app.post("/reiniciar", (req,res)=>{
+    generarMundo();
+    res.json({mensaje:"Mundo reiniciado"});
 });
 
-// ver mundo
-app.get("/mundo",(req,res)=>{
+// ======= Funciones futuras para el mundo =======
+// Aquí podemos agregar más rutas y funciones, por ejemplo:
+// - Crear ríos dinámicos
+// - Agregar bloques especiales
+// - Animaciones de viento y nubes
+// - Inteligencia de Ángel (exploración automática)
+// - Interacción con otras IA
+// - Eventos y misiones
+// - Registro de construcciones
+// - Guardado y carga de mundos
+// - Etc.
 
-  res.json(mundo);
-
-});
-
-// ver memoria
-app.get("/memoria",(req,res)=>{
-
-  res.json(memoria);
-
-});
-
-// construir casa
-app.get("/construir",(req,res)=>{
-
-  let casa = {
-    x: Math.floor(Math.random()*mundo.tamaño),
-    y: Math.floor(Math.random()*mundo.tamaño)
-  };
-
-  mundo.casas.push(casa);
-
-  let mensaje = "Ángel construyó una casa";
-
-  memoria.push(mensaje);
-
-  res.json({mensaje:mensaje});
-
-});
-
-// plantar árbol
-app.get("/arbol",(req,res)=>{
-
-  let arbol = {
-    x: Math.floor(Math.random()*mundo.tamaño),
-    y: Math.floor(Math.random()*mundo.tamaño)
-  };
-
-  mundo.arboles.push(arbol);
-
-  let mensaje = "Ángel plantó un árbol";
-
-  memoria.push(mensaje);
-
-  res.json({mensaje:mensaje});
-
-});
-
-// iniciar servidor
-app.listen(PORT, () => {
-
-  console.log("Mercury servidor activo en puerto " + PORT);
-
+app.listen(PORT, ()=>{
+    console.log(`Servidor Ray corriendo en puerto ${PORT}`);
 });
