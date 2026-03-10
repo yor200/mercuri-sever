@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Mercury Map Avanzado</title>
+<style>
+  body{
+    font-family:Arial;
+    text-align:center;
+    background:#a0d8f1;
+  }
+  #map{
+    display:grid;
+    grid-template-columns:repeat(10,50px);
+    grid-template-rows:repeat(10,50px);
+    grid-gap:2px;
+    justify-content:center;
+    margin-top:20px;
+    position:relative;
+  }
+  .tile{
+    width:50px;
+    height:50px;
+    transition: all 0.3s;
+  }
+  .madera{ background:#8B4513; }
+  .roca{ background:#555555; }
+  .arbol{ background:#228B22; }
+  .nieve{ background:#f0f8ff; }
+  .arbusto{ background:#006400; }
+  .montaña{ background:#A9A9A9; }
+  .angel{ background:#1E90FF; border:2px solid #fff; }
+  .nube{
+    position:absolute;
+    width:50px;
+    height:30px;
+    background:white;
+    border-radius:50%;
+    opacity:0.7;
+    animation: nubeMove 20s linear infinite;
+  }
+  @keyframes nubeMove{
+    0%{left:-60px;}
+    100%{left:520px;}
+  }
+</style>
+</head>
+<body>
+<h2>Mundo Mercury Avanzado (vista superior)</h2>
+<div id="map"></div>
+
+<script>
+// tamaño del mapa
+const mapSize = 10;
+let angel = {x:4, y:4};
+
+// diferentes bloques
+let bloques = [];
+for(let y=0; y<mapSize; y++){
+  bloques[y] = [];
+  for(let x=0; x<mapSize; x++){
+    let tipos = ['madera','roca','arbol','nieve','arbusto','montaña'];
+    bloques[y][x] = tipos[Math.floor(Math.random()*tipos.length)];
+  }
+}
+
+// dibujar mapa
+function drawMap(){
+  const map = document.getElementById("map");
+  map.innerHTML = "";
+  for(let y=0;y<mapSize;y++){
+    for(let x=0;x<mapSize;x++){
+      let tile = document.createElement("div");
+      tile.classList.add("tile");
+      tile.classList.add(bloques[y][x]);
+      if(x==angel.x && y==angel.y) tile.classList.add("angel");
+      map.appendChild(tile);
+    }
+  }
+  // agregar nubes
+  for(let i=0;i<3;i++){
+    let nube = document.createElement("div");
+    nube.classList.add("nube");
+    nube.style.top = `${Math.random()*50}px`;
+    nube.style.animationDelay = `${i*5}s`;
+    map.appendChild(nube);
+  }
+}
+
+// actualizar mapa cada vez que Ángel se mueve
+function moverAngel(dx,dy){
+  angel.x += dx;
+  angel.y += dy;
+  if(angel.x<0) angel.x=0;
+  if(angel.x>mapSize-1) angel.x=mapSize-1;
+  if(angel.y<0) angel.y=0;
+  if(angel.y>mapSize-1) angel.y=mapSize-1;
+  drawMap();
+}
+
+// mapa inicial
+drawMap();
+
+// ejemplo: mover Ángel cada 2 segundos aleatoriamente
+setInterval(()=>{
+  let dx = Math.floor(Math.random()*3)-1;
+  let dy = Math.floor(Math.random()*3)-1;
+  moverAngel(dx,dy);
+},2000);
+
+</script>
+</body>
+</html>
