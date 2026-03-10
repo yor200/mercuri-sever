@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Ángel - Mercury</title>
+</head>
+
+<body>
+
+<h2>Habla con Ángel</h2>
+
+<input id="msg" placeholder="Escribe algo">
+<button onclick="enviar()">Enviar</button>
+
+<p id="respuesta"></p>
+
+<script>
+async function enviar(){
+
+let mensaje = document.getElementById("msg").value;
+
+let res = await fetch("/chat",{
+method:"POST",
+headers:{"Content-Type":"application/json"},
+body:JSON.stringify({message:mensaje})
+});
+
+let data = await res.json();
+
+document.getElementById("respuesta").innerText = data.reply;
+
+}
+</script>
+
+</body>
+</html>
